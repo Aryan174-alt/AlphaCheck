@@ -58,5 +58,20 @@ This document explains every module in simple terms, detailing why it was design
   3. *Q: Why test cross-sectional momentum as a primary heuristic baseline?*
      *A: Cross-sectional momentum is one of the most persistent empirical market anomalies. Any ML model claiming predictive power must beat this simple sort.*
 
+---
+
+## M5: Walk-Forward Validation & ML Models (`validation.py`, `models.py`)
+- **What it does**: Provides expanding-window walk-forward validation with an enforced purge/embargo gap equal to the label horizon (5 trading days). Encapsulates Logistic Regression (with StandardScaler) and Gradient Boosted Trees (XGBoost) with hyperparameter constraints.
+- **Why designed that way**: Time-series cross-validation cannot shuffle data. Walk-forward mimics real out-of-sample trading where only the past is known. The embargo gap prevents the 5-day future return in the final training rows from leaking into the initial test rows.
+- **Mistakes avoided**: Never tuning hyperparameters or fitting feature scalers across the full dataset; never using standard K-fold cross-validation.
+- **Interview Questions**:
+  1. *Q: What is the purpose of an embargo gap in walk-forward validation?*
+     *A: When labels span $H$ future days, training labels near the split boundary use price movements that occur during the test period. The embargo gap purges $H$ days between train and test to guarantee zero label overlap.*
+  2. *Q: Why expanding window instead of rolling window?*
+     *A: Expanding window utilizes all historical regime information as time progresses, mirroring an institutional fund that accumulates more data each year.*
+  3. *Q: Why prefer conservative tree depth (e.g. max_depth=3) in financial tabular ML?*
+     *A: Financial data has extremely low signal-to-noise ratio. Deep trees rapidly memorize idiosyncratic noise, leading to severe test-set degradation.*
+
+
 
 

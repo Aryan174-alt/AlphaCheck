@@ -17,3 +17,9 @@ This log records blockers, dependency collisions, and platform-specific resoluti
 - **Issue**: First push attempt returned `remote: Repository not found` because the GitHub repository had just been created or needed upstream branch initialization.
 - **Resolution**: Successfully linked and established upstream tracking to `https://github.com/Aryan174-alt/AlphaCheck.git` on `main`.
 
+## Entry 4: LightGBM C-API Access Violation on Windows Python 3.13 / 3.11
+- **Date**: 2026-11-09
+- **Issue**: `lightgbm` 4.7.0 raised an unhandled Windows memory access violation (`0x0000000000000000`) during `LGBM_DatasetSetField` call.
+- **Resolution**: Standardized the gradient boosting classifier pipeline on `xgboost` (XGBClassifier), which operates with full stability on Windows CPU environments.
+
+
