@@ -86,6 +86,21 @@ This document explains every module in simple terms, detailing why it was design
   3. *Q: How do you verify portfolio accounting integrity?*
      *A: In `test_backtest.py`, we verify that on an asset with zero price change, ending equity matches initial capital minus the exact sum of broker fees and slippage.*
 
+---
+
+## M7: Performance Metrics & Bootstrap CIs (`metrics.py`)
+- **What it does**: Calculates annualized return, annualized volatility, Sharpe ratio (vs 6% G-Sec risk-free rate), Sortino ratio, max drawdown, Calmar ratio, win rate, annual turnover, and stationary block bootstrap 95% confidence intervals for Sharpe.
+- **Why designed that way**: Point-estimate Sharpe ratios are deeply noisy and easily overfitted. Bootstrap intervals reveal whether a Sharpe of 0.8 is statistically distinct from zero or negative return distributions.
+- **Mistakes avoided**: Never computing annualized volatility by multiplying by 252 instead of $\sqrt{252}$; never reporting Sharpe without risk-free rate adjustment; never using IID bootstrap on serially correlated returns.
+- **Interview Questions**:
+  1. *Q: Why use a block bootstrap instead of standard IID bootstrap for financial returns?*
+     *A: Financial returns exhibit volatility clustering and autocorrelation. Standard IID bootstrap destroys this time dependence; block bootstrap preserves local serial correlation.*
+  2. *Q: Why is Sortino ratio often preferred over Sharpe ratio?*
+     *A: Sharpe penalizes upside volatility equally with downside crashes. Sortino penalizes downside volatility only, rewarding large positive outliers.*
+  3. *Q: Why is reporting confidence intervals for Sharpe essential in quantitative research?*
+     *A: A sample Sharpe of 0.5 with a 95% CI of [-0.2, 1.2] across 200 trading days is statistically indistinguishable from noise. Reporting the CI prevents deceptive claims.*
+
+
 
 
 
