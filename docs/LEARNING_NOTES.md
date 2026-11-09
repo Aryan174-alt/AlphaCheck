@@ -114,6 +114,21 @@ This document explains every module in simple terms, detailing why it was design
   3. *Q: How do you handle days where a company has no news?*
      *A: Impute sentiment with 0.0 (neutral), maintain an explicit binary feature `has_news=0`, and record `sentiment_count=0`.*
 
+---
+
+## M9: Robustness & Sensitivity (`robustness.py`)
+- **What it does**: Stress-tests model alpha across 4 friction regimes (0, 5, 10, 30 bps), analyzes conditioned performance by market regime (Bull, Bear, Sideways), and computes global Tree SHAP feature importances.
+- **Why designed that way**: Real-world quantitative trading strategies often exhibit "friction fragility"—where a positive Sharpe collapses immediately once fees reach 15 bps. Testing sensitivity reveals the true hurdle rate.
+- **Mistakes avoided**: Never evaluating a strategy solely in a secular bull market without conditioning on flat and bear periods; never assuming zero slippage for large positions.
+- **Interview Questions**:
+  1. *Q: What does your cost sensitivity analysis reveal about alpha decay?*
+     *A: It quantifies the breakeven friction threshold (bps per trade). If an ML strategy turns unprofitable at 8 bps, it is unexecutable in Indian cash equities.*
+  2. *Q: How do you define and segment market regimes in AlphaCheck?*
+     *A: Using the 60-day rolling cumulative return of Nifty 50: Bull (>+5%), Bear (<-5%), and Sideways (±5%), testing whether outperformance holds across all three.*
+  3. *Q: What does Tree SHAP tell you that standard feature importance (gain/split) does not?*
+     *A: Gain and split counts can be heavily biased toward high-cardinality features and do not indicate directional impact. SHAP provides consistent, additive game-theoretic attributions.*
+
+
 
 
 
