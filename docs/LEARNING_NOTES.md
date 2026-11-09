@@ -100,6 +100,21 @@ This document explains every module in simple terms, detailing why it was design
   3. *Q: Why is reporting confidence intervals for Sharpe essential in quantitative research?*
      *A: A sample Sharpe of 0.5 with a 95% CI of [-0.2, 1.2] across 200 trading days is statistically indistinguishable from noise. Reporting the CI prevents deceptive claims.*
 
+---
+
+## M8: NLP & Timestamp Alignment (`sentiment.py`)
+- **What it does**: Parses financial news headlines, scores sentiment via FinBERT zero-shot ($P(\text{pos}) - P(\text{neg})$), and strictly maps news items to trading sessions using a 09:00 AM IST cutoff rule.
+- **Why designed that way**: News breaking during the trading day (e.g. 11:30 AM) cannot be assumed traded at 09:15 AM open of that same day. Intraday news is strictly shifted to the next market open.
+- **Mistakes avoided**: Never joining headlines on same-day calendar dates regardless of timestamps; never using post-market earnings reports for same-day predictions.
+- **Interview Questions**:
+  1. *Q: What is timestamp leakage in financial NLP and how did you prevent it?*
+     *A: Using news published at 2:00 PM to predict the day's total return. We enforce a strict cutoff: news published after 09:00 AM IST is deferred to the subsequent trading day.*
+  2. *Q: Why use $P(\text{positive}) - P(\text{negative})$ as a single scalar polarity metric?*
+     *A: It spans $[-1.0, 1.0]$, inherently downweights ambiguous/neutral headlines (where probabilities are concentrated on neutral), and serves as an intuitive feature for linear and tree models.*
+  3. *Q: How do you handle days where a company has no news?*
+     *A: Impute sentiment with 0.0 (neutral), maintain an explicit binary feature `has_news=0`, and record `sentiment_count=0`.*
+
+
 
 
 
