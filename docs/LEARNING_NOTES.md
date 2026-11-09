@@ -128,6 +128,24 @@ This document explains every module in simple terms, detailing why it was design
   3. *Q: What does Tree SHAP tell you that standard feature importance (gain/split) does not?*
      *A: Gain and split counts can be heavily biased toward high-cardinality features and do not indicate directional impact. SHAP provides consistent, additive game-theoretic attributions.*
 
+---
+
+## AI Lab: Transformers, Embeddings, Deep Models, & LLM Tagger (`A1-A5`)
+- **A1 Sentiment Bake-Off (`sentiment_finetune.py`)**: Financial PhraseBank split strictly by sentence (70/15/15) to prevent sentence leakage. Compares zero-shot FinBERT against fine-tuned DistilBERT on Accuracy and Macro-F1.
+- **A2 Headline Embeddings (`embeddings.py`)**: Sentence-Transformers `all-MiniLM-L6-v2` encodes headlines into 384-dimensional dense vectors, reduced via PCA to 5 compact representation features.
+- **A3 Deep Sequence Model (`deep_models.py`)**: Small PyTorch Transformer Encoder and TCN operating on rolling 20-day sequential feature tensors, compared directly against gradient boosted trees on identical walk-forward splits.
+- **A4 Local LLM Event Tagger (`llm_tagger.py`)**: Classifies headlines into discrete event bins (`earnings`, `regulatory`, `macro`, `contract`, `other`) at temperature 0 with MD5 persistent disk caching and fallback heuristic support.
+- **A5 Explainability (`explain.py`)**: Gradient-based saliency attributions across sequence features to inspect what the Transformer attends to.
+- **Mistakes avoided**: Never leaking sentences between train and test in text fine-tuning; never calling LLMs nondeterministically without temperature 0 and disk caching.
+- **Interview Questions**:
+  1. *Q: Why did higher text classification accuracy on Financial PhraseBank not guarantee improved trading Sharpe?*
+     *A: Financial text contains low signal-to-noise ratio and markets are competitive. Classifying sentiment correctly does not guarantee the news wasn't already priced in seconds after release.*
+  2. *Q: Why might gradient boosting outperform deep Transformers on tabular/sequential financial features?*
+     *A: Tabular financial features have heterogeneous distributions, non-linear thresholds, and limited sample sizes (a few thousand daily bars), where tree-based axis-aligned splits have far stronger inductive bias than unconstrained self-attention.*
+  3. *Q: How is local LLM event tagging made reproducible for backtesting?*
+     *A: By locking temperature to 0.0, keeping prompt templates version-controlled, and storing responses in an immutable hash-keyed JSON cache on disk.*
+
+
 
 
 
