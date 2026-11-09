@@ -47,3 +47,4 @@ def test_data_quality_report(tmp_path):
     assert len(rep) == 3  # BENCHMARK + 2 tickers
     assert (rep["missing_adj_close"] == 0).all()
     assert os.path.exists(str(rep_path))
+

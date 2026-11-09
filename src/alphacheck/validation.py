@@ -70,3 +70,4 @@ class WalkForwardValidator:
 
             train_len += self.step_days
             fold_idx += 1
+

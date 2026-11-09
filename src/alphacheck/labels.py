@@ -76,3 +76,4 @@ def generate_panel_labels(
     all_labels = pd.concat(label_list, ignore_index=True)
     all_labels = all_labels.set_index(["date", "ticker"]).sort_index()
     return all_labels
+

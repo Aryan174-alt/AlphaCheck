@@ -156,3 +156,4 @@ def generate_data_quality_report(
     report_df = pd.DataFrame(records)
     report_df.to_csv(report_path, index=False)
     return report_df
+

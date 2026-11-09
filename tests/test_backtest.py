@@ -35,3 +35,4 @@ def test_backtest_costs_and_reconciliation():
 
     # Ending equity must equal initial_capital - total_costs_paid because stock price never changed
     assert pytest.approx(res.equity_curve.iloc[-1], rel=1e-3) == init_cap - res.total_costs_paid
+

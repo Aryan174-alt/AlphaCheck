@@ -41,3 +41,4 @@ def test_hand_made_labels_example():
 
     # No NaN values allowed in the output
     assert labels.isna().sum().sum() == 0
+

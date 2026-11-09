@@ -124,3 +124,4 @@ def build_panel_features(
     all_feat = pd.concat(feat_list, ignore_index=True)
     all_feat = all_feat.set_index(["date", "ticker"]).sort_index()
     return all_feat
+

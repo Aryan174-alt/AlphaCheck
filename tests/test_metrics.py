@@ -36,3 +36,4 @@ def test_hand_computed_metrics():
     assert "sharpe_ratio" in scorecard
     assert "sharpe_ci_lower_95" in scorecard
     assert "max_drawdown" in scorecard
+

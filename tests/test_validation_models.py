@@ -55,3 +55,4 @@ def test_models_fit_and_predict():
     lgbm.fit(X, y)
     probs_lgb = lgbm.predict_proba(X)[:, 1]
     assert len(probs_lgb) == n
+

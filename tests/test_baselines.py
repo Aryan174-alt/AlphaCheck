@@ -40,3 +40,4 @@ def test_equal_weight_and_momentum_weights():
     rnd_list = generate_random_signals(panel, top_k=2, seeds=[42])
     assert len(rnd_list) == 1
     assert pytest.approx(rnd_list[0].sum(axis=1).iloc[0], rel=1e-5) == 1.0
+
