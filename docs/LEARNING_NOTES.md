@@ -72,6 +72,21 @@ This document explains every module in simple terms, detailing why it was design
   3. *Q: Why prefer conservative tree depth (e.g. max_depth=3) in financial tabular ML?*
      *A: Financial data has extremely low signal-to-noise ratio. Deep trees rapidly memorize idiosyncratic noise, leading to severe test-set degradation.*
 
+---
+
+## M6: Backtest Simulator (`backtest.py`)
+- **What it does**: Executes a discrete-event paper-trading portfolio simulator tracking exact cash, share positions, market-to-market valuations, turnover, and transaction friction (default 10 bps fee + 2 bps slippage). Enforces 1-day execution lag to eliminate look-ahead.
+- **Why designed that way**: Vectorized backtests often hallucinate instant execution at the closing price used to form the signal, and ignore rebalancing costs. Our engine explicitly accounts for friction on every rupee traded.
+- **Mistakes avoided**: Never trading at day $t$ close using signals computed on day $t$ close; never letting cash become silently negative; incorporating a deadband threshold to prevent micro-churn.
+- **Interview Questions**:
+  1. *Q: What is execution lag and why is it mandatory?*
+     *A: If a model computes predictions after market close on Tuesday, trades can only be physically filled on Wednesday. Simulating Tuesday close execution is a fatal look-ahead flaw.*
+  2. *Q: How does turnover affect realistic strategy performance?*
+     *A: A strategy generating 500% annualized turnover pays $500\% \times 0.24\% = 1.20\%$ in friction annually. At higher frequency, turnover consumes 100% of gross alpha.*
+  3. *Q: How do you verify portfolio accounting integrity?*
+     *A: In `test_backtest.py`, we verify that on an asset with zero price change, ending equity matches initial capital minus the exact sum of broker fees and slippage.*
+
+
 
 
 
