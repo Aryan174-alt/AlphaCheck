@@ -44,4 +44,19 @@ This document explains every module in simple terms, detailing why it was design
   3. *Q: What is the critical guardrail when generating forward labels?*
      *A: Dropping the last $H$ rows (where future data is not yet observed) and strictly embargoing the last $H$ training days from the test set.*
 
+---
+
+## M4: Baselines (`baselines.py`)
+- **What it does**: Establishes 4 rigorous reference benchmarks: passive buy-and-hold Nifty 50, equal-weight basket, cross-sectional top-K momentum rule, and Monte Carlo random trader (multi-seed average).
+- **Why designed that way**: Complex ML and transformer models are pointless unless they can demonstrably beat simple, zero-parameter rules like cross-sectional momentum and market beta.
+- **Mistakes avoided**: Never comparing ML solely against a risk-free rate; never omitting a random signal baseline to test chance distribution.
+- **Interview Questions**:
+  1. *Q: Why is an Equal-Weight benchmark often harder to beat than a market-cap index like Nifty 50?*
+     *A: Equal-weighting assigns higher exposure to smaller, higher-beta constituents and rebalances by selling winners and buying losers (mean reversion bonus).*
+  2. *Q: What purpose does the multi-seed random signal serve?*
+     *A: It reveals the empirical distribution of random stock picking under the identical backtest engine, proving whether model alpha is statistically distinct from chance.*
+  3. *Q: Why test cross-sectional momentum as a primary heuristic baseline?*
+     *A: Cross-sectional momentum is one of the most persistent empirical market anomalies. Any ML model claiming predictive power must beat this simple sort.*
+
+
 
