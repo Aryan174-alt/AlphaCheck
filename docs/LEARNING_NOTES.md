@@ -30,3 +30,18 @@ This document explains every module in simple terms, detailing why it was design
   3. *Q: Why is rolling CAPM beta against Nifty 50 useful as a feature?*
      *A: It measures systemic market sensitivity. During market drawdowns or rallies, high-beta stocks react non-linearly compared to low-beta defensives.*
 
+---
+
+## M3: Label Generation (`labels.py`)
+- **What it does**: Constructs 5-trading-day forward excess return binary labels: $y_{i,t} = \mathbf{1}(R_{i, t \to t+5} > R_{\text{bench}, t \to t+5})$, and strictly drops rows without the complete 5-day future horizon.
+- **Why designed that way**: Classifying relative outperformance against the index removes macro beta (market-wide drift) and isolates idiosyncratic stock-picking ability.
+- **Mistakes avoided**: Never keeping unfulfilled forward returns at the tail end of the dataset; never forward-filling missing labels.
+- **Interview Questions**:
+  1. *Q: Why formulate the target as excess return over Nifty 50 instead of raw direction (+/-)?*
+     *A: Raw directional prediction mostly learns whether the broader market went up or down. Predicting excess return forces models to discover idiosyncratic stock-picking alpha.*
+  2. *Q: Why 5 trading days horizon instead of 1-day?*
+     *A: 1-day predictions are heavily dominated by bid-ask bounce and microstructure noise. A 5-day horizon provides enough time for fundamental/sentiment information to be absorbed.*
+  3. *Q: What is the critical guardrail when generating forward labels?*
+     *A: Dropping the last $H$ rows (where future data is not yet observed) and strictly embargoing the last $H$ training days from the test set.*
+
+
