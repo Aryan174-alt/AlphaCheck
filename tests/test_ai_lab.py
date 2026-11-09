@@ -19,6 +19,7 @@ def test_no_sentence_overlap_in_splits():
     assert len(train_sentences.intersection(val_sentences)) == 0
     assert len(train_sentences.intersection(test_sentences)) == 0
     assert len(val_sentences.intersection(test_sentences)) == 0
+    assert len(test_df) > 0
 
 
 def test_deep_sequence_model_tensor_shapes():
@@ -54,4 +55,3 @@ def test_llm_tagger_deterministic(tmp_path):
     assert t1_first == "earnings"
     assert t1_second == "earnings"
     assert t2_first == "regulatory"
-

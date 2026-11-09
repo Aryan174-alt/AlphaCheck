@@ -1,7 +1,7 @@
 """M6 Backtest Simulator: paper-trading simulation engine with friction, slippage, and position accounting.
 
 Rules:
-- Rebalances on schedule (e.g. weekly / every 5 days).
+- Rebalances on schedule (e.g. weekly / every 5 days) when rebalance_days=5.
 - Signals generated at close of day t are executed at day t+1 open/close (zero look-ahead).
 - Applies transaction fees (default 0.10% per side) and slippage (default 0.02%).
 - Reconciles cash, positions, transaction costs, and portfolio equity exactly.
@@ -26,6 +26,28 @@ class BacktestResult:
     turnover_series: pd.Series
 
 
+def enforce_periodic_rebalancing(
+    target_weights: pd.DataFrame,
+    rebalance_freq_days: int = 5,
+) -> pd.DataFrame:
+    """Enforce that target weights change ONLY on periodic rebalance intervals.
+
+    On non-rebalance days, previous desired weights are held constant.
+    """
+    if rebalance_freq_days <= 1:
+        return target_weights
+
+    rebalanced = pd.DataFrame(index=target_weights.index, columns=target_weights.columns)
+    last_w = None
+
+    for i, (dt, row) in enumerate(target_weights.iterrows()):
+        if i % rebalance_freq_days == 0 or last_w is None:
+            last_w = row
+        rebalanced.loc[dt] = last_w
+
+    return rebalanced.astype(float)
+
+
 def run_portfolio_backtest(
     target_weights: pd.DataFrame,
     price_matrix: pd.DataFrame,
@@ -33,29 +55,22 @@ def run_portfolio_backtest(
     fee_rate: float = 0.0010,       # 0.10% (10 bps) one-way
     slippage_rate: float = 0.0002,  # 0.02% (2 bps) slippage
     execution_lag_days: int = 1,
+    rebalance_freq_days: int = 5,   # Weekly (every 5 trading days)
 ) -> BacktestResult:
-    """Run exact simulation of portfolio equity across time.
+    """Run exact simulation of portfolio equity across time."""
+    # 1. Enforce periodic rebalancing schedule
+    scheduled_weights = enforce_periodic_rebalancing(target_weights, rebalance_freq_days=rebalance_freq_days)
 
-    Args:
-        target_weights: DataFrame (dates x tickers) with target weight allocations summing to <= 1.0.
-        price_matrix: DataFrame (dates x tickers) with adjusted close prices.
-        initial_capital: Starting cash in INR.
-        fee_rate: One-way fee (brokerage, STT, exchange fees).
-        slippage_rate: One-way slippage.
-        execution_lag_days: 1 means target weights formed on date t are traded on date t+1.
-    """
-    # Align dates
-    common_dates = target_weights.index.intersection(price_matrix.index).sort_values()
-    common_tickers = [c for c in target_weights.columns if c in price_matrix.columns]
+    # 2. Align dates
+    common_dates = scheduled_weights.index.intersection(price_matrix.index).sort_values()
+    common_tickers = [c for c in scheduled_weights.columns if c in price_matrix.columns]
 
-    weights = target_weights.loc[common_dates, common_tickers].shift(execution_lag_days).fillna(0.0)
+    weights = scheduled_weights.loc[common_dates, common_tickers].shift(execution_lag_days).fillna(0.0)
     prices = price_matrix.loc[common_dates, common_tickers]
 
     dates = list(common_dates)
-    n_dates = len(dates)
-
     cash = initial_capital
-    holdings: Dict[str, float] = {t: 0.0 for t in common_tickers}  # number of shares
+    holdings: Dict[str, float] = {t: 0.0 for t in common_tickers}
 
     portfolio_values = []
     trade_records = []
@@ -65,14 +80,13 @@ def run_portfolio_backtest(
     for i, dt in enumerate(dates):
         current_prices = prices.loc[dt].to_dict()
 
-        # Compute current marked-to-market value before rebalancing
+        # Marked-to-market value before rebalancing
         positions_value = sum(holdings[t] * current_prices[t] for t in common_tickers if pd.notna(current_prices[t]))
         current_nav = cash + positions_value
 
         desired_w = weights.loc[dt].to_dict()
         day_turnover_value = 0.0
 
-        # Execute trades to align with desired_w
         for t in common_tickers:
             p = current_prices.get(t, np.nan)
             if pd.isna(p) or p <= 0:
@@ -82,13 +96,12 @@ def run_portfolio_backtest(
             current_val = holdings[t] * p
             diff_val = target_val - current_val
 
-            # Avoid tiny frictional rebalancing trades under 0.5% NAV
-            if abs(diff_val) > (0.005 * current_nav):  # 0.5% turnover deadband threshold
+            # Deadband threshold to avoid tiny micro-rebalances
+            if abs(diff_val) > (0.01 * current_nav):  # 1% turnover threshold
                 trade_shares = diff_val / p
                 trade_value = abs(diff_val)
                 effective_cost = trade_value * (fee_rate + slippage_rate)
 
-                # Update cash and shares
                 if diff_val > 0:  # Buy
                     cash -= (diff_val + effective_cost)
                 else:  # Sell
@@ -108,7 +121,7 @@ def run_portfolio_backtest(
                     "fees_and_slippage": effective_cost,
                 })
 
-        # Re-evaluate NAV after execution
+        # Post-trade NAV
         positions_value = sum(holdings[t] * current_prices[t] for t in common_tickers if pd.notna(current_prices[t]))
         nav_post = cash + positions_value
         portfolio_values.append(nav_post)
