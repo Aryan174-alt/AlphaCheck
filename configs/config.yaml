@@ -1,0 +1,111 @@
+# AlphaCheck Master Configuration
+
+project:
+  name: AlphaCheck
+  description: "Leakage-safe ML + transformer research framework for Nifty 50 stocks"
+  random_seed: 42
+
+data:
+  benchmark_ticker: "^NSEI"
+  universe:
+    # Nifty 50 constituents (NSE India tickers)
+    - "RELIANCE.NS"
+    - "TCS.NS"
+    - "HDFCBANK.NS"
+    - "INFY.NS"
+    - "ICICIBANK.NS"
+    - "HINDUNILVR.NS"
+    - "ITC.NS"
+    - "SBIN.NS"
+    - "BHARTIARTL.NS"
+    - "KOTAKBANK.NS"
+    - "LT.NS"
+    - "AXISBANK.NS"
+    - "BAJFINANCE.NS"
+    - "ASIANPAINT.NS"
+    - "MARUTI.NS"
+    - "HCLTECH.NS"
+    - "SUNPHARMA.NS"
+    - "TITAN.NS"
+    - "TATAMOTORS.NS"
+    - "ULTRACEMCO.NS"
+    - "NTPC.NS"
+    - "POWERGRID.NS"
+    - "ONGC.NS"
+    - "NESTLEIND.NS"
+    - "JSWSTEEL.NS"
+    - "M&M.NS"
+    - "GRASIM.NS"
+    - "BAJAJFINSV.NS"
+    - "ADANIENT.NS"
+    - "ADANIPORTS.NS"
+    - "COALINDIA.NS"
+    - "TATASTEEL.NS"
+    - "HINDALCO.NS"
+    - "CIPLA.NS"
+    - "SBILIFE.NS"
+    - "BPCL.NS"
+    - "TECHM.NS"
+    - "EICHERMOT.NS"
+    - "DRREDDY.NS"
+    - "BRITANNIA.NS"
+    - "WIPRO.NS"
+    - "APOLLOHOSP.NS"
+    - "DIVISLAB.NS"
+    - "BAJAJ-AUTO.NS"
+    - "HEROMOTOCO.NS"
+    - "INDUSINDBK.NS"
+    - "TATACONSUM.NS"
+    - "SHRIRAMFIN.NS"
+    - "TRENT.NS"
+    - "BEL.NS"
+  start_date: "2016-01-01"
+  end_date: "2026-01-01"
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+
+features:
+  return_windows: [1, 5, 10, 20, 60]
+  volatility_window: 20
+  momentum_windows: [5, 10, 20, 60]
+  rsi_window: 14
+  macd:
+    fast: 12
+    slow: 26
+    signal: 9
+  beta_window: 60
+
+label:
+  forward_horizon_days: 5
+  excess_over_benchmark: true
+
+validation:
+  initial_train_years: 3
+  step_months: 6
+  test_months: 6
+  embargo_days: 5
+
+backtest:
+  initial_capital: 1000000.0   # 10 Lakh INR
+  default_fee_rate: 0.0010    # 10 bps per side
+  slippage_rate: 0.0002       # 2 bps slippage
+  sensitivity_rates: [0.0, 0.0005, 0.0010, 0.0030] # 0, 5, 10, 30 bps
+  rebalance_freq: "W"         # Weekly rebalancing (every 5 trading days)
+  top_k_stocks: 10            # Top quintile / decile portfolio selection
+
+nlp:
+  finbert_model_id: "ProsusAI/finbert"
+  distilbert_base: "distilbert-base-uncased"
+  embedding_model_id: "sentence-transformers/all-MiniLM-L6-v2"
+  pca_components: 5
+  batch_size: 32
+  max_length: 64
+  epochs: 2
+  learning_rate: 2.0e-5
+  llm_model: "llama3.2:3b"
+
+paths:
+  figures_dir: "reports/figures"
+  tables_dir: "reports/tables"
+  models_dir: "models"
+
